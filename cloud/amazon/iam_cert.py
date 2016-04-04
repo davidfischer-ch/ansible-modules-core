@@ -232,7 +232,11 @@ def main():
         new_name=dict(default=None, required=False),
         path=dict(default='/', required=False),
         new_path=dict(default=None, required=False),
+<<<<<<< 24db4de2450448eb72fd10069708b686f960280b
         dup_ok=dict(default=False, required=False, choices=[False, True], type='bool')
+=======
+        dup_ok=dict(default=False, required=False, type='bool')
+>>>>>>> Change dup_ok type to bool
     )
     )
 
