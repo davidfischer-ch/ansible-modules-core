@@ -124,26 +124,9 @@ def boto_exception(err):
     return error
 
 def cert_meta(iam, name):
-    opath       = iam.get_server_certificate(name).get_server_certificate_result.\
-                                                 server_certificate.\
-                                                 server_certificate_metadata.\
-                                                 path
-    ocert       = iam.get_server_certificate(name).get_server_certificate_result.\
-                                                 server_certificate.\
-                                                 certificate_body
-    ocert_id    = iam.get_server_certificate(name).get_server_certificate_result.\
-                                                 server_certificate.\
-                                                 server_certificate_metadata.\
-                                                 server_certificate_id
-    upload_date = iam.get_server_certificate(name).get_server_certificate_result.\
-                                                 server_certificate.\
-                                                 server_certificate_metadata.\
-                                                 upload_date
-    exp         = iam.get_server_certificate(name).get_server_certificate_result.\
-                                                 server_certificate.\
-                                                 server_certificate_metadata.\
-                                                 expiration
-    return opath, ocert, ocert_id, upload_date, exp
+    cert = iam.get_server_certificate(name).\
+            get_server_certificate_result.server_certificate
+    return cert.server_certificate_metadata, cert.certificate_body
 
 def dup_check(module, iam, name, new_name, cert, orig_cert_names, orig_cert_bodies, dup_ok):
     update=False
@@ -182,35 +165,49 @@ def cert_action(module, iam, name, cpath, new_name, new_path, state,
     if state == 'present':
         update = dup_check(module, iam, name, new_name, cert, orig_cert_names,
                            orig_cert_bodies, dup_ok)
+        metadata, body = cert_meta(iam, name)
         if update:
-            opath, ocert, ocert_id, upload_date, exp = cert_meta(iam, name)
             changed=True
             if new_name and new_path:
                 iam.update_server_cert(name, new_cert_name=new_name, new_path=new_path)
                 module.exit_json(changed=changed, original_name=name, new_name=new_name,
-                                 original_path=opath, new_path=new_path, cert_body=ocert,
-                                 upload_date=upload_date, expiration_date=exp)
+                                 original_path=metadata.path, new_path=new_path,
+                                 cert_body=body,
+                                 upload_date=upload_date,
+                                 arn=metadata.arn,
+                                 expiration_date=metadata.expiration)
             elif new_name and not new_path:
                 iam.update_server_cert(name, new_cert_name=new_name)
                 module.exit_json(changed=changed, original_name=name, new_name=new_name,
-                                 cert_path=opath, cert_body=ocert,
-                                 upload_date=upload_date, expiration_date=exp)
+                                 cert_path=metadata.path, cert_body=body,
+                                 upload_date=metadata.upload_date,
+                                 arn=metadata.arn,
+                                 expiration_date=metadata.expiration)
             elif not new_name and new_path:
                 iam.update_server_cert(name, new_path=new_path)
                 module.exit_json(changed=changed, name=new_name,
-                                 original_path=opath, new_path=new_path, cert_body=ocert,
-                                 upload_date=upload_date, expiration_date=exp)
+                                 original_path=metadata.path,
+                                 new_path=new_path,
+                                 cert_body=body,
+                                 upload_date=metadata.upload_date,
+                                 expiration_date=metadata.expiration,
+                                 arn=metadata.arn,
+                                 msg='No new path or name specified. No changes made')
             else:
                 changed=False
-                module.exit_json(changed=changed, name=name, cert_path=opath, cert_body=ocert,
-                                 upload_date=upload_date, expiration_date=exp,
-                                 msg='No new path or name specified. No changes made')
+                module.exit_json(changed=changed, name=name,
+                                 cert_path=metadata.path, cert_body=body,
+                                 upload_date=metadata.upload_date,
+                                 arn=metadata.arn,
+                                 expiration_date=metadata.expiration)
         else:
             changed=True
             iam.upload_server_cert(name, cert, key, cert_chain=chain, path=cpath)
-            opath, ocert, ocert_id, upload_date, exp = cert_meta(iam, name)
-            module.exit_json(changed=changed, name=name, cert_path=opath, cert_body=ocert,
-                                 upload_date=upload_date, expiration_date=exp)
+            module.exit_json(changed=changed, name=name,
+                             cert_path=metadata.path, cert_body=body,
+                             upload_date=metadata.upload_date,
+                             arn=metadata.arn,
+                             expiration_date=metadata.expiration)
     elif state == 'absent':
         if name in orig_cert_names:
             changed=True
