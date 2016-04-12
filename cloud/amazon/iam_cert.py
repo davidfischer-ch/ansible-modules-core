@@ -165,8 +165,8 @@ def cert_action(module, iam, name, cpath, new_name, new_path, state,
     if state == 'present':
         update = dup_check(module, iam, name, new_name, cert, orig_cert_names,
                            orig_cert_bodies, dup_ok)
-        metadata, body = cert_meta(iam, name)
         if update:
+            metadata, body = cert_meta(iam, name)
             changed=True
             if new_name and new_path:
                 iam.update_server_cert(name, new_cert_name=new_name, new_path=new_path)
@@ -203,6 +203,7 @@ def cert_action(module, iam, name, cpath, new_name, new_path, state,
         else:
             changed=True
             iam.upload_server_cert(name, cert, key, cert_chain=chain, path=cpath)
+            metadata, body = cert_meta(iam, name)
             module.exit_json(changed=changed, name=name,
                              cert_path=metadata.path, cert_body=body,
                              upload_date=metadata.upload_date,
@@ -229,11 +230,7 @@ def main():
         new_name=dict(default=None, required=False),
         path=dict(default='/', required=False),
         new_path=dict(default=None, required=False),
-<<<<<<< 24db4de2450448eb72fd10069708b686f960280b
-        dup_ok=dict(default=False, required=False, choices=[False, True], type='bool')
-=======
         dup_ok=dict(default=False, required=False, type='bool')
->>>>>>> Change dup_ok type to bool
     )
     )
 
