@@ -223,14 +223,14 @@ def main():
     argument_spec.update(dict(
         state=dict(
             default=None, required=True, choices=['present', 'absent']),
-        name=dict(default=None, required=False),
-        cert=dict(default=None, required=False, type='path'),
-        key=dict(default=None, required=False, type='path'),
-        cert_chain=dict(default=None, required=False, type='path'),
-        new_name=dict(default=None, required=False),
-        path=dict(default='/', required=False),
-        new_path=dict(default=None, required=False),
-        dup_ok=dict(default=False, required=False, type='bool')
+        name=dict(default=None),
+        cert=dict(default=None, type='path'),
+        key=dict(default=None, type='path'),
+        cert_chain=dict(default=None, type='path'),
+        new_name=dict(default=None),
+        path=dict(default='/'),
+        new_path=dict(default=None),
+        dup_ok=dict(default=False, type='bool')
     )
     )
 
