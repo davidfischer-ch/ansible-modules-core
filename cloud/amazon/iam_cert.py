@@ -265,7 +265,7 @@ def main():
         if cert_chain is not None:
             cert_chain = open(module.params.get('cert_chain'), 'r').read()
     else:
-        key = cert = chain = None
+        key = cert = None
 
     orig_certs = [ctb['server_certificate_name'] for ctb in \
                                                     iam.get_all_server_certs().\
