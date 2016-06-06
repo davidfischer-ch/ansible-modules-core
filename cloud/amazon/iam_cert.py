@@ -129,7 +129,7 @@ def cert_meta(iam, name):
     return cert.server_certificate_metadata, cert.certificate_body
 
 def dup_check(module, iam, name, new_name, cert, orig_cert_names, orig_cert_bodies, dup_ok):
-    update=False
+    update = False
     if any(ct in orig_cert_names for ct in [name, new_name]):
         for i_name in [name, new_name]:
             if i_name is None:
@@ -137,19 +137,19 @@ def dup_check(module, iam, name, new_name, cert, orig_cert_names, orig_cert_bodi
 
             if cert is not None:
                 try:
-                    c_index=orig_cert_names.index(i_name)
+                    c_index = orig_cert_names.index(i_name)
                 except NameError:
                     continue
                 else:
                     if orig_cert_bodies[c_index] == cert:
-                        update=True
+                        update = True
                         break
                     elif orig_cert_bodies[c_index] != cert:
                         module.fail_json(changed=False, msg='A cert with the name %s already exists and'
                                                            ' has a different certificate body associated'
                                                            ' with it. Certificates cannot have the same name' % i_name)
             else:
-                update=True
+                update = True
                 break
     elif cert in orig_cert_bodies and not dup_ok:
         for crt_name, crt_body in zip(orig_cert_names, orig_cert_bodies):
@@ -167,7 +167,7 @@ def cert_action(module, iam, name, cpath, new_name, new_path, state,
                            orig_cert_bodies, dup_ok)
         if update:
             metadata, body = cert_meta(iam, name)
-            changed=True
+            changed = True
             if new_name and new_path:
                 iam.update_server_cert(name, new_cert_name=new_name, new_path=new_path)
                 module.exit_json(changed=changed, original_name=name, new_name=new_name,
@@ -194,14 +194,14 @@ def cert_action(module, iam, name, cpath, new_name, new_path, state,
                                  arn=metadata.arn,
                                  msg='No new path or name specified. No changes made')
             else:
-                changed=False
+                changed = False
                 module.exit_json(changed=changed, name=name,
                                  cert_path=metadata.path, cert_body=body,
                                  upload_date=metadata.upload_date,
                                  arn=metadata.arn,
                                  expiration_date=metadata.expiration)
         else:
-            changed=True
+            changed = True
             iam.upload_server_cert(name, cert, key, cert_chain=chain, path=cpath)
             metadata, body = cert_meta(iam, name)
             module.exit_json(changed=changed, name=name,
@@ -211,11 +211,11 @@ def cert_action(module, iam, name, cpath, new_name, new_path, state,
                              expiration_date=metadata.expiration)
     elif state == 'absent':
         if name in orig_cert_names:
-            changed=True
+            changed = True
             iam.delete_server_cert(name)
             module.exit_json(changed=changed, deleted_cert=name)
         else:
-            changed=False
+            changed = False
             module.exit_json(changed=changed, msg='Certificate with the name %s already absent' % name)
 
 def main():
@@ -265,7 +265,7 @@ def main():
         if cert_chain is not None:
             cert_chain = open(module.params.get('cert_chain'), 'r').read()
     else:
-        key=cert=chain=None
+        key = cert = chain = None
 
     orig_certs = [ctb['server_certificate_name'] for ctb in \
                                                     iam.get_all_server_certs().\
